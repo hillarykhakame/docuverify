@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>verify document</title>
+    <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+   />
+
+    <style>
+        .navbar-nav .nav-item {
+          margin-right: 1rem; /* Space between nav items */
+        }
+        .dropdown-menu {
+          background-color: #e3f2fd; /* Light blue background */
+        }
+        .dropdown-menu .dropdown-item:hover {
+          background-color: #b3e5fc; /* Light blue color on hover */
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        .carousel-item {
+          height: 600px;
+          background-size: cover;
+          background-position: center;
+        }
+        .carousel-caption {
+          background: rgba(0, 0, 0, 0.5);
+          padding: 1rem;
+          border-radius: 0.5rem;
+        }
+        .features {
+          padding: 60px 0;
+        }
+        .features .card {
+          border: none;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .features .card img {
+          height: 200px;
+          object-fit: cover;
+        }
+        .footer {
+          background-color: #343a40;
+          color: white;
+          text-align: center;
+          padding: 20px 0;
+        }
+    </style>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .verification-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .action-button {
+            background-color: #0056b3;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .action-button:hover {
+            background-color: #004494;
+        }
+
+        .status-button {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: default;
+            transition: background-color 0.3s ease;
+        }
+
+        .unverified {
+            background-color: #ff4d4d;
+            color: white;
+        }
+
+        .verified {
+            background-color: #4caf50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarTogglerDemo01"
+            aria-controls="navbarTogglerDemo01"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+            <a class="navbar-brand" href="/">Docuverify</a>
+            <ul class="navbar-nav mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link " aria-current="page" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/upload">Upload Document</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/verify">Verify</a>
+              </li>
+            </ul>
+            <!-- New ul for right alignment -->
+            
+          </div>
+        </div>
+    </nav>
+    <div class="verification-container">
+      <h1>Document Verification</h1>
+      <table>
+          <thead>
+              <tr>
+                  <th>Serial Number</th>
+                  <th>Document Name</th>
+                  <th>Document Type</th>
+                  <th>Status</th>
+                  <th>Action</th>    
+              </tr>
+          </thead>
+          <tbody>
+              {% for document in documents %}
+              <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ document.document_name }}</td>
+                  <td>{{ document.document_type }}</td>
+                  
+                  <td>
+                      <button class="status-button {% if document.is_verified %}verified{% else %}unverified{% endif %}">
+                          {% if document.is_verified %}Verified{% else %}Unverified{% endif %}
+                      </button>
+                  </td>
+                  <td>
+                      {% if not document.is_verified %}
+                      <form method="POST" action="{% url 'verify_document' %}">
+                          {% csrf_token %}
+                          <input type="hidden" name="document_id" value="{{ document.id }}">
+                          <button type="submit" class="action-button">Verify</button>
+                      </form>
+                      {% endif %}
+                  </td>   
+              </tr>
+              {% empty %}
+              <tr>
+                  <td colspan="5">No documents available</td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+  </div>
+  
+
+</body>
+</html>
