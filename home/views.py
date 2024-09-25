@@ -6,6 +6,8 @@ from .utils import extract_text_from_image
 from .models import Document, DocumentVerification
 from django.shortcuts import render, get_object_or_404, redirect
 from .utils import verify_document
+import requests
+
 
 
 def home (request):
@@ -66,6 +68,10 @@ def text_extraction(request, document_name):
 
 
 
+from django.shortcuts import get_object_or_404, redirect
+import requests  # Import the requests library to make HTTP requests
+from .models import Document
+
 def verify_document_view(request):
     if request.method == 'POST':
         print("POST request received.")
@@ -73,6 +79,7 @@ def verify_document_view(request):
         document_id = request.POST.get('document_id')
         print(f"Document ID received: {document_id}")
 
+        # Fetch the document from DocuVerify's database
         document = get_object_or_404(Document, id=document_id)
         print(f"Document retrieved: {document}")
 
@@ -84,8 +91,39 @@ def verify_document_view(request):
         cert_number = extracted_text.get('certificate_number', '').strip()
         print(f"Owner Name: {owner_name}, Certificate Number: {cert_number}")
 
-        # Verify the document
-        status, verification_record = verify_document(owner_name, cert_number)
+        # Define the DocuBase API endpoint and query parameters
+        docubase_url = 'http://127.0.0.1:9000/verify_document'  # Replace with actual DocuBase API URL
+        params = {
+            'owner-name': owner_name,
+            'cert_number':cert_number
+        }
+
+        # Make a request to the DocuBase API
+        try:
+            response = requests.get(docubase_url, params=params)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+
+            # Check if the response contains data
+            if response.status_code == 200:
+                docubase_data = response.json()
+                print(f"Data from DocuBase: {docubase_data}")
+
+                # Verify if the document exists in DocuBase
+                if docubase_data:
+                    status = "Verified"
+                    verification_record = docubase_data[0]  # Assuming you get a list of records
+                else:
+                    status = "Not Verified"
+                    verification_record = None
+            else:
+                status = "Error"
+                verification_record = None
+
+        except requests.RequestException as e:
+            print(f"Error making request to DocuBase API: {e}")
+            status = "Error"
+            verification_record = None
+
         print(f"Verification status: {status}, Verification record: {verification_record}")
 
         # Update document verification status
@@ -98,6 +136,7 @@ def verify_document_view(request):
     
     print("Request method is not POST. Redirecting to home.")
     return redirect('home')  # Redirect if the request method is not POST
+
 
 
 
